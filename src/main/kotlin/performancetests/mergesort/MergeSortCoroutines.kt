@@ -1,12 +1,31 @@
 package performancetests.performancetests.mergesort
 
-class MergeSort {
+import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
 
-    fun runAllMergeSort(arrays: List<IntArray>) {
-        arrays.forEach { mergeSort(it) }
+class MergeSortCoroutines : CoroutineScope {
+
+    private val job = Job()
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Default + job
+
+    suspend fun runAllMergeSort(arrays: List<IntArray>) {
+
+        val tasks = mutableListOf<Job>();
+
+        arrays.forEach { array ->
+            tasks.add(coroutineScope {
+                launch {
+                    mergeSort(array)
+                }
+            })
+        }
+
+        tasks.forEach { it.join() }
     }
 
-    private fun mergeSort(array: IntArray) {
+    private suspend fun mergeSort(array: IntArray) {
         if (array.size <= 1) {
             return
         }
@@ -17,6 +36,14 @@ class MergeSort {
 
         System.arraycopy(array, 0, leftArray, 0, mid)
         System.arraycopy(array, mid, rightArray, 0, array.size - mid)
+
+//        coroutineScope {
+//            val left = async { mergeSort(leftArray) }
+//            val right = async { mergeSort(rightArray) }
+//            left.await()
+//            right.await()
+//            merge(leftArray, rightArray, array)
+//        }
 
         mergeSort(leftArray)
         mergeSort(rightArray)
