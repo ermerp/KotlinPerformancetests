@@ -47,7 +47,7 @@ bin/
 /.idea/misc.xml
 /.idea/vcs.xml
 
-**/Data*.txt
+**/List*.txt
 
 # Default ignored files
 /shelf/
