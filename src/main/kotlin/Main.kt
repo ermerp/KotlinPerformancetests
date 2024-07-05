@@ -9,34 +9,36 @@ import kotlin.system.measureTimeMillis
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 suspend fun main() {
 
-    val fileName = "src/main/kotlin/performancetests/mergesort/Data10000x10000.txt"
-    val lines = File(fileName).readLines()
+    val algorithm = "coroutines"
+    val listLength = "50000000"
+    val chunkSize = listLength.toInt()/16
 
-    val arrays = lines.drop(2).map { line ->
-        line.split(",").map { it.toInt() }.toIntArray()
-    }
+    val fileName = "src/main/kotlin/performancetests/mergesort/List$listLength.txt"
+    val line = File(fileName).readText().trim()
 
-    val arrays2 = arrays.map { it.clone() }
+    val array = line.split(",").map { it.toInt() }.toIntArray()
 
     println("Import done!")
 
-    val time = measureTimeMillis {
-        MergeSort().runAllMergeSort(arrays)
+
+    if (algorithm == "single") {
+        val time = measureTimeMillis {
+            MergeSort().mergeSort(array)
+        }
+        println("Time Single: $time")
+    } else if (algorithm == "coroutines") {
+        val time = measureTimeMillis {
+            MergeSortCoroutines().mergeSort(array, chunkSize)
+        }
+        println("Time Coroutines: $time")
+    } else {
+        println("Unknown algorithm, fallback: single")
+        val time = measureTimeMillis {
+            MergeSort().mergeSort(array)
+        }
+        println("Time Single: $time")
     }
-    println("Time Single: $time")
 
-    val time2 = measureTimeMillis {
-        MergeSortCoroutines().runAllMergeSort(arrays2)
-    }
-    println("Time Coroutines: $time2")
-
-//    for (array in arrays) {
-//        println(array.contentToString())
-//    }
-//
-//    for (array in arrays2) {
-//        println(array.contentToString())
-//    }
-
+   //println(array.contentToString())
 
 }

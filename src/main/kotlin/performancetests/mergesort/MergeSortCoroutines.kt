@@ -1,31 +1,11 @@
 package performancetests.performancetests.mergesort
 
-import kotlinx.coroutines.*
-import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 
-class MergeSortCoroutines : CoroutineScope {
+class MergeSortCoroutines {
 
-    private val job = Job()
-
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Default + job
-
-    suspend fun runAllMergeSort(arrays: List<IntArray>) {
-
-        val tasks = mutableListOf<Job>();
-
-        arrays.forEach { array ->
-            tasks.add(coroutineScope {
-                launch {
-                    mergeSort(array)
-                }
-            })
-        }
-
-        tasks.forEach { it.join() }
-    }
-
-    private suspend fun mergeSort(array: IntArray) {
+    public suspend fun mergeSort(array: IntArray, chunkSize: Int) {
         if (array.size <= 1) {
             return
         }
@@ -37,16 +17,20 @@ class MergeSortCoroutines : CoroutineScope {
         System.arraycopy(array, 0, leftArray, 0, mid)
         System.arraycopy(array, mid, rightArray, 0, array.size - mid)
 
-//        coroutineScope {
-//            val left = async { mergeSort(leftArray) }
-//            val right = async { mergeSort(rightArray) }
-//            left.await()
-//            right.await()
-//            merge(leftArray, rightArray, array)
-//        }
+        if(mid >= chunkSize) {
+            val deferred1 = GlobalScope.async {
+                mergeSort(leftArray, chunkSize)
+            }
+            val deferred2 = GlobalScope.async {
+                mergeSort(rightArray, chunkSize)
+            }
+            deferred1.await()
+            deferred2.await()
+        } else {
+            mergeSort(leftArray, chunkSize)
+            mergeSort(rightArray, chunkSize)
+        }
 
-        mergeSort(leftArray)
-        mergeSort(rightArray)
         merge(leftArray, rightArray, array)
     }
 
@@ -66,6 +50,7 @@ class MergeSortCoroutines : CoroutineScope {
                 array[k++] = rightArray[j++]
             }
         }
+
         while (i < leftArray.size) {
             array[k++] = leftArray[i++]
         }

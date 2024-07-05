@@ -2,11 +2,7 @@ package performancetests.performancetests.mergesort
 
 class MergeSort {
 
-    fun runAllMergeSort(arrays: List<IntArray>) {
-        arrays.forEach { mergeSort(it) }
-    }
-
-    private fun mergeSort(array: IntArray) {
+    public fun mergeSort(array: IntArray) {
         if (array.size <= 1) {
             return
         }
