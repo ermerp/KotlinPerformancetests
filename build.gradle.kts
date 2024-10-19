@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "1.9.22"
+    id("application")
 }
 
 group = "performancetests"
@@ -17,6 +18,20 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
 kotlin {
     jvmToolchain(21)
+}
+
+application {
+    mainClass.set("performancetests.MainKt")
+}
+
+tasks.jar {
+    manifest {
+        attributes["Main-Class"] = "performancetests.MainKt"
+    }
+    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    archiveFileName.set("mergesortKotlin.jar")
 }
