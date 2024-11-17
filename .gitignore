@@ -48,6 +48,7 @@ bin/
 /.idea/vcs.xml
 
 *List*.txt
+*Bank*.txt
 
 # Default ignored files
 /shelf/

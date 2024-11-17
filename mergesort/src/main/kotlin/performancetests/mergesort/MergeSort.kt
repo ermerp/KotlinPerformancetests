@@ -1,11 +1,8 @@
-package performancetests.performancetests.mergesort
+package performancetests.mergesort
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+class MergeSort {
 
-class MergeSortCoroutines {
-
-    public suspend fun mergeSort(array: IntArray, chunkSize: Int) {
+    public fun mergeSort(array: IntArray) {
         if (array.size <= 1) {
             return
         }
@@ -17,20 +14,8 @@ class MergeSortCoroutines {
         System.arraycopy(array, 0, leftArray, 0, mid)
         System.arraycopy(array, mid, rightArray, 0, array.size - mid)
 
-        if(mid >= chunkSize) {
-            val deferred1 = GlobalScope.async {
-                mergeSort(leftArray, chunkSize)
-            }
-            val deferred2 = GlobalScope.async {
-                mergeSort(rightArray, chunkSize)
-            }
-            deferred1.await()
-            deferred2.await()
-        } else {
-            mergeSort(leftArray, chunkSize)
-            mergeSort(rightArray, chunkSize)
-        }
-
+        mergeSort(leftArray)
+        mergeSort(rightArray)
         merge(leftArray, rightArray, array)
     }
 
@@ -50,7 +35,6 @@ class MergeSortCoroutines {
                 array[k++] = rightArray[j++]
             }
         }
-
         while (i < leftArray.size) {
             array[k++] = leftArray[i++]
         }

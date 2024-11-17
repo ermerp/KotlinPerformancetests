@@ -1,11 +1,8 @@
-package performancetests
+package performancetests.mergesort
 
 import kotlinx.coroutines.runBlocking
-import performancetests.performancetests.mergesort.MergeSort
-import performancetests.performancetests.mergesort.MergeSortCoroutines
 import java.io.File
 import kotlin.system.measureTimeMillis
-import kotlin.time.Duration
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
