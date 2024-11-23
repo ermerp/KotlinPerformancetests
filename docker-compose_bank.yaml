@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: pg_network
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - pg_network
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: pg_isready -h postgres
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  #  postgrest:
+  #    image: postgrest/postgrest:latest
+  #    container_name: postgrest
+  #    environment:
+  #      PGRST_DB_URI: postgres://myuser:mypassword@postgres:5432/mydatabase
+  #      PGRST_DB_SCHEMA: public
+  #      PGRST_DB_POOL: 10
+  #      PGRST_DB_ANON_ROLE: anon
+  #    depends_on:
+  #      - postgres
+  #    ports:
+  #      - "3000:3000"
+  #    networks:
+  #      - pg_network
+
+  bank:
+    image: bank-kotlin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - pg_network
+    environment:
+      DB_HOST: postgres
+      INTERFACE_TYPE: R2DBC
+      ALGORITHM: COROUTINE
+      NUMBER_OF_ACCOUNTS: 1000
+      NUMBER_OF_TRANSACTIONS: 10000
+    volumes:
+      - ./bankData:/bankData
+
+networks:
+  pg_network:
+    driver: bridge
+
+volumes:
+  postgres_data:

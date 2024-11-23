@@ -16,7 +16,7 @@ class R2DBCBankAccountRepository : BankAccountRepository {
     private val connectionFactory = ConnectionFactories.get(
         ConnectionFactoryOptions.builder()
             .option(ConnectionFactoryOptions.DRIVER, "postgresql")
-            .option(ConnectionFactoryOptions.HOST, "localhost")
+            .option(ConnectionFactoryOptions.HOST, System.getenv("DB_HOST") ?: "localhost")
             .option(ConnectionFactoryOptions.PORT, 5432)
             .option(ConnectionFactoryOptions.DATABASE, "mydatabase")
             .option(ConnectionFactoryOptions.USER, "myuser")
@@ -70,21 +70,31 @@ class R2DBCBankAccountRepository : BankAccountRepository {
                 return withConnection { connection ->
                     connection.beginTransaction().awaitFirstOrNull()
 
-                    val fromAccount = connection.createStatement("SELECT id, balance FROM account WHERE id = $1 FOR UPDATE")
-                        .bind("$1", from).execute().awaitSingle().map { row, _ ->
+                    val (firstId, secondId) = if (from < to) from to to else to to from
+
+                    val firstAccount = connection.createStatement("SELECT id, balance FROM account WHERE id = $1 FOR UPDATE")
+                        .bind("$1", firstId).execute().awaitSingle().map { row, _ ->
                             BankAccount(row.get("id", String::class.java)!!, row.get("balance", java.math.BigDecimal::class.java)!!.toDouble())
                         }.awaitSingle()
 
-                    val toAccount = connection.createStatement("SELECT id, balance FROM account WHERE id = $1 FOR UPDATE")
-                        .bind("$1", to).execute().awaitSingle().map { row, _ ->
+                    val secondAccount = connection.createStatement("SELECT id, balance FROM account WHERE id = $1 FOR UPDATE")
+                        .bind("$1", secondId).execute().awaitSingle().map { row, _ ->
                             BankAccount(row.get("id", String::class.java)!!, row.get("balance", java.math.BigDecimal::class.java)!!.toDouble())
                         }.awaitSingle()
 
-                    connection.createStatement("UPDATE account SET balance = $1 WHERE id = $2")
-                        .bind("$1", fromAccount.balance - amount).bind("$2", fromAccount.id).execute().awaitSingle().rowsUpdated.awaitSingle().toInt()
+                    if (firstId == from) {
+                        connection.createStatement("UPDATE account SET balance = $1 WHERE id = $2")
+                            .bind("$1", firstAccount.balance - amount).bind("$2", firstAccount.id).execute().awaitSingle().rowsUpdated.awaitSingle().toInt()
 
-                    connection.createStatement("UPDATE account SET balance = $1 WHERE id = $2")
-                        .bind("$1", toAccount.balance + amount).bind("$2", toAccount.id).execute().awaitSingle().rowsUpdated.awaitSingle().toInt()
+                        connection.createStatement("UPDATE account SET balance = $1 WHERE id = $2")
+                            .bind("$1", secondAccount.balance + amount).bind("$2", secondAccount.id).execute().awaitSingle().rowsUpdated.awaitSingle().toInt()
+                    } else {
+                        connection.createStatement("UPDATE account SET balance = $1 WHERE id = $2")
+                            .bind("$1", firstAccount.balance + amount).bind("$2", firstAccount.id).execute().awaitSingle().rowsUpdated.awaitSingle().toInt()
+
+                        connection.createStatement("UPDATE account SET balance = $1 WHERE id = $2")
+                            .bind("$1", secondAccount.balance - amount).bind("$2", secondAccount.id).execute().awaitSingle().rowsUpdated.awaitSingle().toInt()
+                    }
 
                     connection.commitTransaction().awaitFirstOrNull()
                     1
