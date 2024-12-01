@@ -11,15 +11,20 @@ fun main(args: Array<String>) = runBlocking {
     val listLength = if (args.size > 1 && args[1].isNotEmpty()) args[1].toInt() else 30000000
     val chunkNumber = if (args.size > 2 && args[2].isNotEmpty()) args[2].toInt() else 16
     val runs = if (args.size > 3 && args[3].isNotEmpty()) args[3].toInt() else 1
+    val warmUpRuns = if (args.size > 4 && args[4].isNotEmpty()) args[4].toInt() else 0
     val chunkSize = listLength / chunkNumber
 
-    println("Kotlin - Algorithm: $algorithm, List length: $listLength, Chunk number: $chunkNumber, Runs: $runs")
+    println("Kotlin - Algorithm: $algorithm, List length: $listLength, Chunk number: $chunkNumber, Runs: $runs, Warm up runs: $warmUpRuns")
 
 
     val fileName = "List$listLength.txt"
     val line = File(fileName).readText().trim()
 
     val list = line.split(",").map { it.toInt() }.toIntArray()
+
+    repeat(warmUpRuns) {
+        runAlgorithm(algorithm, list.clone(), chunkSize)
+    }
 
     println("File imported.")
 

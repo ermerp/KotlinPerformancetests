@@ -14,12 +14,12 @@
 docker build -t bank-kotlin .
 ```
 
-### start DB
+### start Container
 ```
-docker-compose -f docker-compose_bank.yaml up
+docker-compose up
 ```
 
-### reset DB
+### reset Container
 ```
-docker-compose -f docker-compose_bank.yaml down 
+docker-compose down -v
 ```

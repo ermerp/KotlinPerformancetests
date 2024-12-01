@@ -7,7 +7,7 @@ import java.nio.charset.StandardCharsets
 class PostgRESTBankAccountRepository : BankAccountRepository {
 
     companion object {
-        const val URL = "http://localhost:3000/rpc/"
+        val URL = "http://"+ (System.getenv("DB_HOST") ?: "localhost") +":3000/rpc/"
         const val MAX_RETRIES = 100
         const val RETRY_DELAY_MS = 1000L
     }

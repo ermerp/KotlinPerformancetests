@@ -27,7 +27,7 @@ class R2DBCBankAccountRepository : BankAccountRepository {
     private val connectionPool = ConnectionPool(
         ConnectionPoolConfiguration.builder(connectionFactory)
             .maxIdleTime(Duration.ofMinutes(30))
-            .maxSize(20)
+            .maxSize(System.getenv("MAX_CONNECTIONS")?.toIntOrNull() ?: 80)
             .build()
     )
 

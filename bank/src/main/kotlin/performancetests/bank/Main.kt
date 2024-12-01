@@ -7,11 +7,13 @@ suspend fun main() {
     // Retrieve the environment variables
     val interfaceType = System.getenv("INTERFACE_TYPE") ?: "R2DBC"
     val algorithm = System.getenv("ALGORITHM") ?: "COROUTINE"
+    val maxConnections = System.getenv("MAX_CONNECTIONS")?.toIntOrNull() ?: 80
     val numberOfAccounts = System.getenv("NUMBER_OF_ACCOUNTS")?.toIntOrNull() ?: 100
     val numberOfTransactions = System.getenv("NUMBER_OF_TRANSACTIONS")?.toIntOrNull() ?: 1000
 
     println("Kotlin:Bank - Interface: $interfaceType" +
             ", Algorithm: $algorithm" +
+            ", Max Connections: $maxConnections" +
             ", Number of accounts: $numberOfAccounts" +
             ", Number of Transactions: $numberOfTransactions")
 
