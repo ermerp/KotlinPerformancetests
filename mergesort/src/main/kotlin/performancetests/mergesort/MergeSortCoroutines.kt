@@ -1,61 +1,66 @@
 package performancetests.mergesort
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
 
 class MergeSortCoroutines {
 
-    public suspend fun mergeSort(array: IntArray, chunkSize: Int) {
-        if (array.size <= 1) {
-            return
-        }
+    suspend fun runMergeSort(array: IntArray, maxDepth: Int) {
+        val tempArray = IntArray(array.size) // Temporäres Array für den Merge-Schritt
+        mergeSort(array, tempArray, 0, array.size - 1, 0, maxDepth)
+    }
 
-        val mid = array.size / 2
-        val leftArray = IntArray(mid)
-        val rightArray = IntArray(array.size - mid)
+    // Der zusätzliche Parameter "currentDepth" zeigt die aktuelle Rekursionstiefe an
+    private suspend fun mergeSort(
+        array: IntArray,
+        tempArray: IntArray,
+        left: Int,
+        right: Int,
+        currentDepth: Int,
+        maxDepth: Int
+    ) {
+        if (left >= right) return
 
-        System.arraycopy(array, 0, leftArray, 0, mid)
-        System.arraycopy(array, mid, rightArray, 0, array.size - mid)
+        val mid = (left + right) / 2
 
-        if(mid >= chunkSize) {
+        // Wenn die aktuelle Tiefe kleiner als maxDepth ist, parallelisieren wir die Rekursion
+        if (currentDepth < maxDepth) {
             val deferred1 = GlobalScope.async {
-                mergeSort(leftArray, chunkSize)
+                mergeSort(array, tempArray, left, mid, currentDepth + 1, maxDepth)
             }
             val deferred2 = GlobalScope.async {
-                mergeSort(rightArray, chunkSize)
+                mergeSort(array, tempArray, mid + 1, right, currentDepth + 1, maxDepth)
             }
             deferred1.await()
             deferred2.await()
         } else {
-            mergeSort(leftArray, chunkSize)
-            mergeSort(rightArray, chunkSize)
+            // Wenn die Rekursionstiefe größer oder gleich der Grenze ist, keine Parallelisierung
+            mergeSort(array, tempArray, left, mid, currentDepth + 1, maxDepth)
+            mergeSort(array, tempArray, mid + 1, right, currentDepth + 1, maxDepth)
         }
 
-        merge(leftArray, rightArray, array)
+        // Merging der beiden sortierten Hälften
+        merge(array, tempArray, left, mid, right)
     }
 
-    private fun merge(
-        leftArray: IntArray,
-        rightArray: IntArray,
-        array: IntArray
-    ) {
-        var i = 0
-        var j = 0
-        var k = 0
+    private fun merge(array: IntArray, tempArray: IntArray, left: Int, mid: Int, right: Int) {
+        for (i in left..right) {
+            tempArray[i] = array[i]
+        }
 
-        while (i < leftArray.size && j < rightArray.size) {
-            if (leftArray[i] <= rightArray[j]) {
-                array[k++] = leftArray[i++]
+        var i = left
+        var j = mid + 1
+        var k = left
+
+        while (i <= mid && j <= right) {
+            if (tempArray[i] <= tempArray[j]) {
+                array[k++] = tempArray[i++]
             } else {
-                array[k++] = rightArray[j++]
+                array[k++] = tempArray[j++]
             }
         }
 
-        while (i < leftArray.size) {
-            array[k++] = leftArray[i++]
-        }
-        while (j < rightArray.size) {
-            array[k++] = rightArray[j++]
+        while (i <= mid) {
+            array[k++] = tempArray[i++]
         }
     }
 }
