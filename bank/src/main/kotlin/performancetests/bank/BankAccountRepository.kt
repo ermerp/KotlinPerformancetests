@@ -8,5 +8,5 @@ interface BankAccountRepository {
     suspend fun deleteAllAccounts(): Int
 
     @Throws(Exception::class)
-    suspend fun book(from: String, to: String, amount: Double): Int
+    suspend fun book(from: String, to: String, amount: Double, delay: Double): Int
 }

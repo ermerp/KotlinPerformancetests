@@ -26,7 +26,7 @@ class R2DBCBankAccountRepository : BankAccountRepository {
 
     private val connectionPool = ConnectionPool(
         ConnectionPoolConfiguration.builder(connectionFactory)
-            .maxIdleTime(Duration.ofMinutes(30))
+            .maxIdleTime(Duration.ofMinutes(60))
             .maxSize(System.getenv("MAX_CONNECTIONS")?.toIntOrNull() ?: 80)
             .build()
     )
@@ -61,7 +61,7 @@ class R2DBCBankAccountRepository : BankAccountRepository {
         }
     }
 
-    override suspend fun book(from: String, to: String, amount: Double): Int {
+    override suspend fun book(from: String, to: String, amount: Double, delay: Double): Int {
         val maxRetries = 100
         val retryDelayMs = 1000L
 
@@ -82,6 +82,11 @@ class R2DBCBankAccountRepository : BankAccountRepository {
                             BankAccount(row.get("id", String::class.java)!!, row.get("balance", java.math.BigDecimal::class.java)!!.toDouble())
                         }.awaitSingle()
 
+                    if (delay > 0) {
+                        connection.createStatement("SELECT pg_sleep($delay);")
+                            .execute().awaitSingle()
+                    }
+
                     if (firstId == from) {
                         connection.createStatement("UPDATE account SET balance = $1 WHERE id = $2")
                             .bind("$1", firstAccount.balance - amount).bind("$2", firstAccount.id).execute().awaitSingle().rowsUpdated.awaitSingle().toInt()
@@ -101,7 +106,7 @@ class R2DBCBankAccountRepository : BankAccountRepository {
                 }
             } catch (e: Exception) {
                 if (e.message?.contains("deadlock") == true) {
-                    val sleepTime = retryDelayMs * (attempt + 1) + (Math.random() * 5000).toLong()
+                    val sleepTime = retryDelayMs * (attempt + 1) + (Math.random() * 500).toLong()
                     println("Deadlock detected. Retrying after $sleepTime ms...")
                     kotlinx.coroutines.delay(sleepTime)
                 } else {

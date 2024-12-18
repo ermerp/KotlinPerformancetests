@@ -27,7 +27,7 @@ class PostgRESTBankAccountRepository : BankAccountRepository {
     }
 
     @Throws(Exception::class)
-    override suspend fun book(from: String, to: String, amount: Double): Int {
+    override suspend fun book(from: String, to: String, amount: Double, delay: Double): Int {
         var attempt = 0
         while (attempt < MAX_RETRIES) {
             val connection = setupConnection("transfer_balance")
@@ -61,7 +61,7 @@ class PostgRESTBankAccountRepository : BankAccountRepository {
     }
 
     private fun calculateRetryDelay(attempt: Int): Long {
-        return RETRY_DELAY_MS * attempt + (Math.random() * 5000).toLong()
+        return RETRY_DELAY_MS * attempt + (Math.random() * 500).toLong()
     }
 
     @Throws(Exception::class)

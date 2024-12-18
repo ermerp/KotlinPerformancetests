@@ -10,12 +10,14 @@ suspend fun main() {
     val maxConnections = System.getenv("MAX_CONNECTIONS")?.toIntOrNull() ?: 80
     val numberOfAccounts = System.getenv("NUMBER_OF_ACCOUNTS")?.toIntOrNull() ?: 100
     val numberOfTransactions = System.getenv("NUMBER_OF_TRANSACTIONS")?.toIntOrNull() ?: 1000
+    val delayTransaction = System.getenv("DELAY_TRANSACTION")?.toDoubleOrNull() ?: 0.0
 
     println("Kotlin:Bank - Interface: $interfaceType" +
             ", Algorithm: $algorithm" +
             ", Max Connections: $maxConnections" +
             ", Number of accounts: $numberOfAccounts" +
-            ", Number of Transactions: $numberOfTransactions")
+            ", Number of Transactions: $numberOfTransactions" +
+            ", Delay Transaction: $delayTransaction")
 
     val repository = when (interfaceType) {
         "REST" -> PostgRESTBankAccountRepository()
@@ -47,7 +49,7 @@ suspend fun main() {
 
     val transactionExecutor = TransactionExecutor(repository)
     when (algorithm) {
-        "COROUTINE" -> transactionExecutor.executeTransactionsCoroutine(transactions)
+        "COROUTINE" -> transactionExecutor.executeTransactionsCoroutine(transactions, delayTransaction)
         "SINGLE" -> transactionExecutor.executeTransactionsSingle(transactions)
         else -> throw IllegalArgumentException("Unknown algorithm: $algorithm")
     }
