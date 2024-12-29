@@ -10,7 +10,7 @@ repositories {
 
 dependencies {
     implementation("io.r2dbc:r2dbc-pool:1.0.0.RELEASE")
-    implementation("io.r2dbc:r2dbc-postgresql:0.8.12.RELEASE")
+    implementation("org.postgresql:r2dbc-postgresql:1.0.6.RELEASE")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.6.4")
     implementation("org.slf4j:slf4j-simple:2.0.7")

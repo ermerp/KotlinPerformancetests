@@ -1,8 +1,9 @@
 package performancetests.bank
 
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.util.concurrent.Semaphore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 
 class TransactionExecutor(private val repository: BankAccountRepository) {
 
@@ -12,13 +13,13 @@ class TransactionExecutor(private val repository: BankAccountRepository) {
         }
     }
 
-    suspend fun executeTransactionsCoroutine(transactions: List<Transaction>, delayTransaction: Double) = coroutineScope {
+    suspend fun executeTransactionsCoroutine(transactions: List<Transaction>, delayTransaction: Double) = coroutineScope{
         val maxCon = System.getenv("MAX_CONNECTIONS")?.toIntOrNull() ?: 80
         val semaphore = if (repository is PostgRESTBankAccountRepository) Semaphore(maxCon)
         else null
 
         transactions.forEach { transaction ->
-            launch {
+            launch(Dispatchers.IO) {
                 semaphore?.acquire()
                 try {
                     repository.book(transaction.from, transaction.to, transaction.amount, delayTransaction)

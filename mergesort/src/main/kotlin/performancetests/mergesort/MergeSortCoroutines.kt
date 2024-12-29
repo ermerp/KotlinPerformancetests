@@ -9,7 +9,6 @@ class MergeSortCoroutines {
         mergeSort(array, tempArray, 0, array.size - 1, 0, maxDepth)
     }
 
-    // Der zusätzliche Parameter "currentDepth" zeigt die aktuelle Rekursionstiefe an
     private suspend fun mergeSort(
         array: IntArray,
         tempArray: IntArray,
@@ -22,7 +21,6 @@ class MergeSortCoroutines {
 
         val mid = (left + right) / 2
 
-        // Wenn die aktuelle Tiefe kleiner als maxDepth ist, parallelisieren wir die Rekursion
         if (currentDepth < maxDepth) {
             val deferred1 = GlobalScope.async {
                 mergeSort(array, tempArray, left, mid, currentDepth + 1, maxDepth)
@@ -33,12 +31,10 @@ class MergeSortCoroutines {
             deferred1.await()
             deferred2.await()
         } else {
-            // Wenn die Rekursionstiefe größer oder gleich der Grenze ist, keine Parallelisierung
             mergeSort(array, tempArray, left, mid, currentDepth + 1, maxDepth)
             mergeSort(array, tempArray, mid + 1, right, currentDepth + 1, maxDepth)
         }
 
-        // Merging der beiden sortierten Hälften
         merge(array, tempArray, left, mid, right)
     }
 

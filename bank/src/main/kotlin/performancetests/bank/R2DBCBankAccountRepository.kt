@@ -25,6 +25,8 @@ class R2DBCBankAccountRepository : BankAccountRepository {
     )
 
     private val connectionPool = ConnectionPool(
+        // Set the maximum pool size
+        // Set the connection timeout
         ConnectionPoolConfiguration.builder(connectionFactory)
             .maxIdleTime(Duration.ofMinutes(60))
             .maxSize(System.getenv("MAX_CONNECTIONS")?.toIntOrNull() ?: 80)
@@ -42,6 +44,7 @@ class R2DBCBankAccountRepository : BankAccountRepository {
         }
     }
 
+    // creates a new account in the database
     override suspend fun createAccount(accountId: String, balance: Double): Int {
         return withConnection { connection ->
             val result = connection.createStatement("INSERT INTO account (id, balance) VALUES ($1, $2)")
@@ -54,6 +57,7 @@ class R2DBCBankAccountRepository : BankAccountRepository {
         }
     }
 
+    // deletes all accounts from the database
     override suspend fun deleteAllAccounts(): Int {
         return withConnection { connection ->
             connection.createStatement("DELETE FROM account").execute().awaitSingle()
@@ -61,6 +65,7 @@ class R2DBCBankAccountRepository : BankAccountRepository {
         }
     }
 
+    // transfers the balance from one account to another
     override suspend fun book(from: String, to: String, amount: Double, delay: Double): Int {
         val maxRetries = 100
         val retryDelayMs = 1000L
@@ -69,7 +74,7 @@ class R2DBCBankAccountRepository : BankAccountRepository {
             try {
                 return withConnection { connection ->
                     connection.beginTransaction().awaitFirstOrNull()
-
+                    // Lock rows in the correct order
                     val (firstId, secondId) = if (from < to) from to to else to to from
 
                     val firstAccount = connection.createStatement("SELECT id, balance FROM account WHERE id = $1 FOR UPDATE")
@@ -82,11 +87,13 @@ class R2DBCBankAccountRepository : BankAccountRepository {
                             BankAccount(row.get("id", String::class.java)!!, row.get("balance", java.math.BigDecimal::class.java)!!.toDouble())
                         }.awaitSingle()
 
+                    // Perform the delay if specified
                     if (delay > 0) {
                         connection.createStatement("SELECT pg_sleep($delay);")
                             .execute().awaitSingle()
                     }
 
+                    // Perform the balance update
                     if (firstId == from) {
                         connection.createStatement("UPDATE account SET balance = $1 WHERE id = $2")
                             .bind("$1", firstAccount.balance - amount).bind("$2", firstAccount.id).execute().awaitSingle().rowsUpdated.awaitSingle().toInt()

@@ -5,14 +5,17 @@ import java.io.File
 import kotlin.system.measureTimeMillis
 
 fun main(args: Array<String>) = runBlocking {
+
+    // Retrieve the algorithm, list length, max depth, runs and warm up runs from the command line arguments
     val algorithm = if (args.isNotEmpty() && args[0].isNotEmpty()) args[0] else "coroutines"
-    val listLength = if (args.size > 1 && args[1].isNotEmpty()) args[1].toInt() else 10000000 //30000000
+    val listLength = if (args.size > 1 && args[1].isNotEmpty()) args[1].toInt() else 10000000
     val maxDepth = if (args.size > 2 && args[2].isNotEmpty()) args[2].toInt() else 4
     val runs = if (args.size > 3 && args[3].isNotEmpty()) args[3].toInt() else 1
     val warmUpRuns = if (args.size > 4 && args[4].isNotEmpty()) args[4].toInt() else 0
 
     println("Kotlin - Algorithm: $algorithm, List length: $listLength, Max Depth: $maxDepth, Runs: $runs, Warm up runs: $warmUpRuns")
 
+    // Import data
     val fileName = "List$listLength.txt"
     val line = File(fileName).readText().trim()
 
@@ -20,12 +23,14 @@ fun main(args: Array<String>) = runBlocking {
 
     println("File imported.")
 
+    // Warm up runs
     repeat(warmUpRuns) {
         runAlgorithm(algorithm, list.clone(), maxDepth)
     }
 
     println("warum up runs finished")
 
+    // Runs the algorithm
     val time = measureTimeMillis {
         repeat(runs) {
             runAlgorithm(algorithm, list.clone(), maxDepth)
@@ -50,5 +55,4 @@ private suspend fun runAlgorithm(algorithm: String, list: IntArray, maxDepth: In
             println("Unknown algorithm")
         }
     }
-    //println(list.contentToString())
 }

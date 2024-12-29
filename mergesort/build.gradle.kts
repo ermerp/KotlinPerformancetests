@@ -8,13 +8,8 @@ repositories {
 }
 
 dependencies {
-    // Basic Kotlin dependency
     implementation(kotlin("stdlib"))
-
-    // Add coroutines dependency
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-
-    // Test dependency
     testImplementation("org.jetbrains.kotlin:kotlin-test:1.9.22")
 }
 
