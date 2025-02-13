@@ -6,10 +6,10 @@ Dieses Repository enthält Benchmarks zur Analyse der Performance von verschiede
 This repository contains benchmarks for analyzing the performance of different thread abstractions in the Kotlin programming language. The benchmarks were developed as part of the master's thesis "Performance Analysis of Thread Abstractions in Different Programming Languages."
 
 ## Implementierte Benchmarks / Implemented Benchmarks
-- **Mergesort Benchmark:** Vergleich der Performance von Parallelisierung mit Threads und Coroutinen
+- **Mergesort Benchmark:** Vergleich der Performance von Parallelisierung mit Coroutinen
 - **Bank Benchmark:** Simulation eines Bank-Systems mit verschiedenen Nebenläufigkeitsmodellen
   <br/><br/>
-- **Mergesort Benchmark:** Comparison of parallelization performance using Threads and Coroutines
+- **Mergesort Benchmark:** Comparison of parallelization performance using Coroutines
 - **Bank Benchmark:** Simulation of a banking system using different concurrency models
 
 ## Nutzung / Usage
